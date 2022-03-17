@@ -1,23 +1,23 @@
 const { Book, User } = require("../models");
-const { AuthenticationError } = require('apollo-server-express');
-const { signToken } = require('../utils/auth');
+const { AuthenticationError } = require("apollo-server-express");
+const { signToken } = require("../utils/auth");
 
 // User:
 // Query: getSingleUser
 // Mutation: createUser
 // TBD: login
 // Book:
-// Mutation: saveBook, deleteBook
+// Mutation: saveBook, deleteBook (this updates the User)
 
 const resolvers = {
   Query: {
-    getSingleUser: async (parent, { _id }) => {
+    me: async (parent, { _id }) => {
       const params = _id ? { _id } : {};
       return User.find(params);
     },
   },
   Mutation: {
-    createUser: async (parent, args) => {
+    addUser: async (parent, args) => {
       const user = await User.create(args);
       const token = signToken(user);
       return { token, user };
@@ -26,13 +26,13 @@ const resolvers = {
       const user = await User.findOne({ email });
 
       if (!user) {
-        throw new AuthenticationError('No user found with this email address');
+        throw new AuthenticationError("No user found with this email address");
       }
 
       const correctPw = await user.isCorrectPassword(password);
 
       if (!correctPw) {
-        throw new AuthenticationError('Incorrect credentials');
+        throw new AuthenticationError("Incorrect credentials");
       }
 
       const token = signToken(user);
@@ -40,15 +40,15 @@ const resolvers = {
       return { token, user };
     },
     saveBook: async (parent, { user, body }) => {
-      const updatedUser = await Book.findOneAndUpdate(
+      const updatedUser = await User.findOneAndUpdate(
         { _id: user._id },
         { $addToSet: { savedBooks: body } },
         { new: true, runValidators: true }
       );
       return updatedUser;
     },
-    deleteBook: async (parent, { user, params }) => {
-      const updatedUser = await Book.findOneAndUpdate(
+    removeBook: async (parent, { user, params }) => {
+      const updatedUser = await User.findOneAndUpdate(
         { _id: user._id },
         { $pull: { savedBooks: { bookId: params.bookId } } },
         { new: true }
