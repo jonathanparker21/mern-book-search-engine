@@ -7,7 +7,7 @@ const typeDefs = gql`
     email: String
     password: String
     savedBooks: [Book]
-    bookCount: 
+    bookCount: Int
   }
 
   type Book {
@@ -34,9 +34,6 @@ const typeDefs = gql`
     addUser(username: String!, email: String!, password: String!): Auth
     saveBook(authors: [String], description: String, title: String, bookId: String, image: String, link: String): User
     removeBook(bookId: String!): User
-    
-    createMatchup(tech1: String!, tech2: String!): Matchup
-    createVote(bookId: String!, techNum: Int!): Matchup
   }
 `;
 
